@@ -16,6 +16,55 @@ import importlib.util
 PACKAGE_DIR = Path(__file__).parent
 PROJECT_ROOT = PACKAGE_DIR
 
+# Import version from package
+try:
+    from amatak_winapp import __version__ as PACKAGE_VERSION
+except ImportError:
+    # Fallback if package not installed
+    PACKAGE_VERSION = "1.0.2"
+
+def get_package_root():
+    """Get the root directory of the installed package"""
+    return PACKAGE_DIR
+
+def print_version():
+    """Print the current version"""
+    print(f"Amatak WinApp version {PACKAGE_VERSION}")
+    return PACKAGE_VERSION
+
+def print_help():
+    """Print help message"""
+    help_text = f"""
+Amatak WinApp Generator v{PACKAGE_VERSION}
+──────────────────────────────
+
+Usage: winapp <command> [options]
+
+Commands:
+  create <name> [location]  Create new Windows application project
+  init [path]              Initialize project (branding, docs, etc.)
+  build [path]             Build project installer
+  gui                      Launch graphical interface
+  version, -v, --version   Show version information
+  help, -h, --help         Show this help message
+
+Options:
+  -v, --version            Show version and exit
+  -h, --help               Show help and exit
+
+Examples:
+  winapp create MyApp
+  winapp create MyApp "C:/Projects"
+  winapp init
+  winapp build
+  winapp gui
+  winapp --version
+  winapp -v
+
+For more information: https://github.com/amatak-org/amatak-winapp
+"""
+    print(help_text)
+
 class ProjectGenerator:
     """Main project generator for pip package"""
     
@@ -32,12 +81,6 @@ class ProjectGenerator:
         
         # Ensure scripts directory exists
         self.scripts_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Print debug info
-        if os.getenv('DEBUG'):
-            print(f"📁 Package root: {self.package_root}")
-            print(f"📁 Scripts dir: {self.scripts_dir}")
-            print(f"📁 Project root: {self.project_root}")
     
     def run_script(self, script_name, cwd=None):
         """Run a Python script"""
@@ -53,7 +96,7 @@ class ProjectGenerator:
         
         if script_path.exists():
             try:
-                print(f"🔄 Running {script_name}...")
+                print(f"Running {script_name}...")
                 print(f"   Path: {script_path}")
                 
                 # Add package directory to Python path for the script
@@ -74,17 +117,17 @@ class ProjectGenerator:
                 if result.stdout:
                     print(result.stdout)
                 if result.stderr:
-                    print(f"⚠️  {result.stderr}")
+                    print(f"Warning: {result.stderr}")
                 
                 return result.returncode == 0
                 
             except Exception as e:
-                print(f"❌ Error running {script_name}: {e}")
+                print(f"Error running {script_name}: {e}")
                 import traceback
                 traceback.print_exc()
                 return False
         else:
-            print(f"⚠️  Script not found: {script_name}")
+            print(f"Script not found: {script_name}")
             print(f"   Searched in: {self.scripts_dir} and {cwd}")
             return False
     
@@ -93,7 +136,7 @@ class ProjectGenerator:
         init_script = self.scripts_dir / "winapp_init.py"
         
         if init_script.exists():
-            print(f"🚀 Running winapp initialization...")
+            print(f"Running winapp initialization...")
             print(f"   Script: {init_script}")
             
             try:
@@ -117,19 +160,19 @@ class ProjectGenerator:
                 
                 # Check if it has a main function
                 if hasattr(init_module, 'main'):
-                    print("📝 Running winapp_init.main()...")
+                    print("Running winapp_init.main()...")
                     return init_module.main()
                 else:
-                    print("⚠️  winapp_init.py has no main() function")
+                    print("Warning: winapp_init.py has no main() function")
                     return False
                     
             except Exception as e:
-                print(f"❌ Error running winapp_init: {e}")
+                print(f"Error running winapp_init: {e}")
                 import traceback
                 traceback.print_exc()
                 return False
         else:
-            print(f"❌ winapp_init.py not found in: {self.scripts_dir}")
+            print(f"winapp_init.py not found in: {self.scripts_dir}")
             return False
     
     def create_structure(self, project_name, category_data, location=None):
@@ -139,8 +182,8 @@ class ProjectGenerator:
         else:
             base_path = Path.cwd() / project_name
         
-        print(f"\n🚀 Creating project: {project_name}")
-        print(f"📍 Location: {base_path}")
+        print(f"\nCreating project: {project_name}")
+        print(f"Location: {base_path}")
         
         # Create project directory
         base_path.mkdir(parents=True, exist_ok=True)
@@ -157,11 +200,11 @@ class ProjectGenerator:
         # Generate initial files
         self.generate_initial_files(base_path)
         
-        print(f"\n✅ Project created at: {base_path}")
-        print(f"\n📋 Next steps:")
+        print(f"\nProject created at: {base_path}")
+        print(f"\nNext steps:")
         print(f"  cd {project_name}")
         print(f"  winapp init      # Initialize with branding and docs")
-        print(f"  winapp build     # Build the installer")
+        print(f"  To complet your entire project next use Amatak Win Builder is availble now.")
         
         return str(base_path)
     
@@ -232,7 +275,7 @@ if __name__ == "__main__":
                 content = content.replace("{CATEGORY}", category_data.get('name', 'General'))
                 main_file.write_text(content, encoding='utf-8')
             except Exception as e:
-                print(f"⚠️  Could not update main.py: {e}")
+                print(f"Could not update main.py: {e}")
     
     def generate_initial_files(self, project_path):
         """Generate initial required files"""
@@ -258,31 +301,31 @@ if __name__ == "__main__":
         else:
             project_path = Path(project_path)
         
-        print(f"\n🚀 Initializing project at: {project_path}")
+        print(f"\nInitializing project at: {project_path}")
         print("=" * 50)
         
         # Check if this looks like a project directory
         if not (project_path / "main.py").exists():
-            print(f"⚠️  Warning: {project_path} doesn't appear to be a project directory")
+            print(f"Warning: {project_path} doesn't appear to be a project directory")
             response = input("Continue anyway? (y/N): ")
             if response.lower() != 'y':
                 print("Initialization cancelled.")
                 return False
         
-        print(f"📁 Project directory: {project_path}")
-        print(f"📦 Package directory: {self.package_root}")
+        print(f"Project directory: {project_path}")
+        print(f"Package directory: {self.package_root}")
         
         # Run winapp_init.py script
         success = self.run_winapp_init(project_path)
         
         if success:
             print("\n" + "=" * 50)
-            print("✅ Project initialization complete!")
-            print("\n📋 Next steps:")
+            print("Project initialization complete!")
+            print("\nNext steps:")
             print(f"  winapp build     # Build the installer")
             return True
         else:
-            print("\n❌ Project initialization failed!")
+            print("\nProject initialization failed!")
             return False
     
     def build_project(self, project_path=None):
@@ -292,11 +335,11 @@ if __name__ == "__main__":
         else:
             project_path = Path(project_path)
         
-        print(f"\n🔨 Building project at: {project_path}")
+        print(f"\nBuilding project at: {project_path}")
         
         # Validate structure first
         if not self.validate_structure(project_path):
-            print("❌ Build failed: Invalid project structure")
+            print("Build failed: Invalid project structure")
             return False
         
         # Run build scripts
@@ -308,11 +351,11 @@ if __name__ == "__main__":
                 success = False
         
         if success:
-            print("\n✅ Build successful!")
-            print(f"📦 Installer files in: {project_path}/installer/")
+            print("\nBuild successful!")
+            print(f"Installer files in: {project_path}/installer/")
             return True
         else:
-            print("\n❌ Build failed!")
+            print("\nBuild failed!")
             return False
     
     def validate_structure(self, project_path):
@@ -337,7 +380,7 @@ if __name__ == "__main__":
                 missing.append(item)
         
         if missing:
-            print("❌ Missing required items:")
+            print("Missing required items:")
             for item in missing:
                 print(f"  - {item}")
             return False
@@ -349,38 +392,12 @@ if __name__ == "__main__":
                 missing_recommended.append(item)
         
         if missing_recommended:
-            print("⚠️  Missing recommended items:")
+            print("Missing recommended items:")
             for item in missing_recommended:
                 print(f"  - {item}")
             print("You can add these with: winapp init")
         
         return True
-
-def print_help():
-    """Print help message"""
-    help_text = """
-Amatak WinApp Generator v1.0.0
-──────────────────────────────
-
-Usage: winapp <command> [options]
-
-Commands:
-  create <name> [location]  Create new Windows application project
-  init [path]              Initialize project (branding, docs, etc.)
-  build [path]             Build project installer
-  gui                      Launch graphical interface
-  help                     Show this help message
-
-Examples:
-  winapp create MyApp
-  winapp create MyApp "C:/Projects"
-  winapp init
-  winapp build
-  winapp gui
-
-Debug mode: Set DEBUG=1 environment variable for detailed output
-"""
-    print(help_text)
 
 def launch_gui():
     """Launch the GUI interface"""
@@ -402,17 +419,17 @@ def launch_gui():
             
             exec(code, exec_globals)
         else:
-            print(f"❌ GUI not found: {gui_path}")
+            print(f"GUI not found: {gui_path}")
             print("Make sure the GUI files are installed.")
             
     except Exception as e:
-        print(f"❌ Failed to launch GUI: {e}")
+        print(f"Failed to launch GUI: {e}")
 
 def main():
     """Main CLI entry point"""
     # Enable debug mode
     if os.getenv('DEBUG'):
-        print("🔍 DEBUG MODE ENABLED")
+        print("DEBUG MODE ENABLED")
         print(f"Python executable: {sys.executable}")
         print(f"Python path: {sys.path}")
     
@@ -421,11 +438,22 @@ def main():
         return 0
     
     command = sys.argv[1].lower()
+    
+    # Handle version commands first
+    if command in ["-v", "--version", "version"]:
+        print_version()
+        return 0
+    
+    # Handle help commands
+    if command in ["-h", "--help", "help"]:
+        print_help()
+        return 0
+    
     generator = ProjectGenerator()
     
     if command == "create":
         if len(sys.argv) < 3:
-            print("❌ Please provide a project name")
+            print("Please provide a project name")
             print("Usage: winapp create <ProjectName> [location]")
             return 1
         
@@ -442,7 +470,7 @@ def main():
             "Specialized Business & Enterprise"
         ]
         
-        print("\n📋 Select Application Category:")
+        print("\nSelect Application Category:")
         for i, cat in enumerate(categories, 1):
             print(f"  {i}. {cat}")
         
@@ -460,7 +488,7 @@ def main():
             generator.create_structure(project_name, {"name": category}, location)
             
         except (ValueError, KeyboardInterrupt) as e:
-            print(f"\n⚠️  Using default category: General ({e})")
+            print(f"\nUsing default category: General ({e})")
             generator.create_structure(project_name, {"name": "General"}, location)
     
     elif command == "init":
@@ -476,11 +504,8 @@ def main():
     elif command == "gui":
         launch_gui()
     
-    elif command in ["-h", "--help", "help"]:
-        print_help()
-    
     else:
-        print(f"❌ Unknown command: {command}")
+        print(f"Unknown command: {command}")
         print_help()
         return 1
     

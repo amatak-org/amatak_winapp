@@ -18,7 +18,7 @@ cd MyApp
 winapp init
 
 # Build the installer
-winapp build
+To start your Project please install Win Project customizer to complet your entire project.
 ```
 
 ## Project Tree
