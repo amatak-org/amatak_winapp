@@ -1,0 +1,3 @@
+[console_scripts]
+amatak-winapp = amatak_winapp.winapp:main
+winapp = amatak_winapp.winapp:main

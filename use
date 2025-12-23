@@ -1,0 +1,11 @@
+# From CLI - launches GUI
+python main.py
+
+# From CLI - forces CLI mode
+python main.py --cli
+
+# Direct GUI launcher
+python run_gui.py
+
+# From existing winapp.py
+python -m bin.amatak.winapp gui

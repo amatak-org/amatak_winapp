@@ -1,0 +1,9 @@
+include LICENSE
+include README.md
+include requirements.txt
+include VERSION.txt
+include *.bat
+include *.pyw
+
+recursive-include amatak_winapp *.py
+recursive-include amatak_winapp/data *.txt
