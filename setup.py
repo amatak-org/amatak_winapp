@@ -6,9 +6,13 @@ import os
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
-# Read version from VERSION.txt
-with open("VERSION.txt", "r", encoding="utf-8") as fh:
-    version = fh.read().strip()
+# Read version from amatak_winapp/data/VERSION.txt
+version_file = os.path.join("amatak_winapp", "data", "VERSION.txt")
+if os.path.exists(version_file):
+    with open(version_file, "r", encoding="utf-8") as fh:
+        version = fh.read().strip()
+else:
+    version = "1.0.2"
 
 # Read requirements
 requirements = []
@@ -30,6 +34,7 @@ setup(
     package_data={
         'amatak_winapp': [
             'data/*.txt',
+            'assets/brand/*',
             'gui/*.py',
             'scripts/*.py',
         ],
@@ -54,7 +59,6 @@ setup(
     entry_points={
         "console_scripts": [
             "winapp=amatak_winapp.winapp:main",
-            "amatak-winapp=amatak_winapp.winapp:main",
         ],
     },
     keywords=[

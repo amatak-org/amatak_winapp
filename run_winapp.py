@@ -69,7 +69,7 @@ def main():
     
     try:
         # Try to import and run the main CLI
-        from bin.amatak.winapp import main as winapp_main
+        from winapp import main as winapp_main
         winapp_main()
     except ImportError as e:
         print(f"❌ Failed to import amatak: {e}")

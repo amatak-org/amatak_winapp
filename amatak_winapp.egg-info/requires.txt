@@ -1,5 +1,5 @@
 PyQt6
-markdown 
+markdown
 requests
 numpy
 aiohttp

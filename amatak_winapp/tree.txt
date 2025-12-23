@@ -1,0 +1,27 @@
+```
+amatak_winapp/
+├── LICENSE
+├── README.md
+├── VERSION.txt
+├── __init__.py
+├── assets
+│   └── brand
+│       ├── brand.ico
+│       ├── brand.png
+│       ├── brand_installer.bmp
+│       └── license_agreement.pdf
+├── data
+│   ├── VERSION.txt
+│   └── __init__.py
+├── gui
+│   ├── __init__.py
+│   └── winapp_gui.py
+├── main.py
+├── scripts
+│   ├── __init__.py
+│   ├── _init_scanner.py
+│   ├── gen_readme.py
+│   ├── gen_win.py
+│   └── winapp_init.py
+└── winapp.py
+```
