@@ -17,3 +17,4 @@ python-magic
 winshell
 pywin32
 reportlab
+psutil

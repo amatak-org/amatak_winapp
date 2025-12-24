@@ -43,7 +43,8 @@ Usage: winapp <command> [options]
 Commands:
   create <name> [location]  Create new Windows application project
   init [path]              Initialize project (branding, docs, etc.)
-  build [path]             Build project installer
+  nsi [path]               Generate NSIS installer script
+  build [path]             Build project installer (runs nsi + win)
   gui                      Launch graphical interface
   version, -v, --version   Show version information
   help, -h, --help         Show this help message
@@ -54,12 +55,13 @@ Options:
 
 Examples:
   winapp create MyApp
-  winapp create MyApp "C:/Projects"
   winapp init
-  winapp build
+  winapp nsi               # Generate NSIS script only
+  winapp build             # Generate NSIS and build installer
   winapp gui
   winapp --version
-  winapp -v
+
+Note: 'winapp build' runs both 'nsi' and 'win' scripts in sequence
 
 For more information: https://github.com/amatak-org/amatak-winapp
 """
@@ -343,7 +345,7 @@ if __name__ == "__main__":
             return False
         
         # Run build scripts
-        scripts = ["gen_win.py"]  # Only gen_win.py exists in your scripts
+        scripts = ["gen_nsi.py", "gen_win.py"]
         success = True
         
         for script in scripts:
@@ -398,6 +400,58 @@ if __name__ == "__main__":
             print("You can add these with: winapp init")
         
         return True
+    
+
+    # In the ProjectGenerator class, add this method:
+
+    def generate_nsi(self, project_path=None):
+        """Generate NSIS installer script"""
+        if project_path is None:
+            project_path = Path.cwd()
+        else:
+            project_path = Path(project_path)
+        
+        print(f"\n🔧 Generating NSIS installer script at: {project_path}")
+        
+        # Check if gen_nsi.py exists
+        script_path = self.scripts_dir / "gen_nsi.py"
+        
+        if not script_path.exists():
+            # Try in current directory
+            script_path = project_path / "gen_nsi.py"
+        
+        if script_path.exists():
+            return self.run_script("gen_nsi.py", project_path)
+        else:
+            print(f"❌ gen_nsi.py not found")
+            print(f"   Searched in: {self.scripts_dir} and {project_path}")
+            return False
+        
+
+      
+    # Add this method to ProjectGenerator class:
+    def generate_brand(self, project_path=None):
+        """Generate branding assets"""
+        if project_path is None:
+            project_path = Path.cwd()
+        else:
+            project_path = Path(project_path)
+        
+        print(f"\n🎨 Generating branding assets at: {project_path}")
+        
+        # Check if gen_brand.py exists
+        script_path = self.scripts_dir / "gen_brand.py"
+        
+        if not script_path.exists():
+            # Try in current directory
+            script_path = project_path / "gen_brand.py"
+        
+        if script_path.exists():
+            return self.run_script("gen_brand.py", project_path)
+        else:
+            print(f"❌ gen_brand.py not found")
+            print(f"   Searched in: {self.scripts_dir} and {project_path}")
+            return False
 
 def launch_gui():
     """Launch the GUI interface"""
@@ -497,12 +551,26 @@ def main():
         return 0 if success else 1
     
     elif command == "build":
+        
         project_path = sys.argv[2] if len(sys.argv) > 2 else None
         success = generator.build_project(project_path)
         return 0 if success else 1
     
+    elif command == "nsi": 
+        project_path = sys.argv[2] if len(sys.argv) > 2 else None
+        success = generator.generate_nsi(project_path)
+        return 0 if success else 1
+    
     elif command == "gui":
         launch_gui()
+
+
+      # In the main() function, add:
+    elif command == "brand":
+        project_path = sys.argv[2] if len(sys.argv) > 2 else None
+        success = generator.generate_brand(project_path)
+        return 0 if success else 1
+
     
     else:
         print(f"Unknown command: {command}")

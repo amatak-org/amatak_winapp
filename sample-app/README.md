@@ -1,19 +1,13 @@
+Copyright (c) 2025 Amatak Holdings Pty Ltd.
+
 # sample-app
 
-## Development & Programming Tools Application
+This project is an automated AI utility suite. This README is auto-generated based on the project structure.
 
-Created with Amatak WinApp Generator.
-
-### Features
-- Dark mode UI
-- Windows installer ready
-- Modern design
-- Easy to customize
-
-### Getting Started
-1. Install dependencies: `pip install -r requirements.txt`
-2. Run the app: `python main.py`
-3. Build installer: `winapp build`
-
-### Theme
-This application uses a dark theme by default. Colors can be customized in `main.py`.
+## Project Structure
+## Documentation & Modules
+## Setup
+```bash
+pip install -r requirements.txt
+python main.py
+```
