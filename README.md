@@ -1,40 +1,28 @@
 Copyright (c) 2025 Amatak Holdings Pty Ltd.
 
-# Amatak WinApp
+# winapp
 
-A comprehensive Python toolkit for creating professional Windows application installers.
+This project is an automated AI utility suite. This README is auto-generated based on the project structure.
 
-## Installation
-
-```bash
-pip install amatak-winapp
-# Create a new Windows application project
-winapp create MyApp
-
-# Navigate to project
-cd MyApp
-
-# Initialize with branding and documentation
-winapp init
-
-# Build the installer
-To start your Project please install Win Project customizer to complet your entire project.
-```
-
-## Project Tree
+## Project Structure
 ```
 winapp/
+├── .gitignore
 ├── .pypirc
 ├── LICENSE
 ├── MANIFEST.in
 ├── README.md
 ├── VERSION.txt
-├── _init_scanner.py
 ├── amatak-winapp.bat
 ├── amatak-winapp.pyw
 ├── amatak_winapp
 │   ├── __init__.py
-│   ├── _init_scanner.py
+│   ├── assets
+│   │   └── brand
+│   │       ├── brand.ico
+│   │       ├── brand.png
+│   │       ├── brand_installer.bmp
+│   │       └── license_agreement.pdf
 │   ├── data
 │   │   ├── VERSION.txt
 │   │   └── __init__.py
@@ -45,28 +33,32 @@ winapp/
 │   │   ├── __init__.py
 │   │   ├── _init_scanner.py
 │   │   ├── gen_readme.py
-│   │   └── gen_win.py
+│   │   ├── gen_win.py
+│   │   └── winapp_init.py
 │   └── winapp.py
-├── amatak_winapp.egg-info
-│   ├── PKG-INFO
-│   ├── SOURCES.txt
-│   ├── __init__.py
-│   ├── dependency_links.txt
-│   ├── entry_points.txt
-│   └── top_level.txt
-├── assets
-│   └── brand
-│       ├── brand.ico
-│       ├── brand.png
-│       └── brand_installer.bmp
-├── bin
-│   ├── __init__.py
-│   └── amatak
-│       └── __init__.py
+├── build
+│   ├── bdist.win-amd64
+│   └── lib
+│       ├── amatak_winapp
+│       │   ├── __init__.py
+│       │   ├── data
+│       │   │   ├── VERSION.txt
+│       │   │   └── __init__.py
+│       │   ├── gui
+│       │   │   ├── __init__.py
+│       │   │   └── winapp_gui.py
+│       │   ├── main.py
+│       │   ├── scripts
+│       │   │   ├── __init__.py
+│       │   │   ├── _init_scanner.py
+│       │   │   ├── gen_readme.py
+│       │   │   ├── gen_win.py
+│       │   │   └── winapp_init.py
+│       │   └── winapp.py
+│       └── dist
+│           └── __init__.py
 ├── dist
-│   ├── __init__.py
-│   ├── amatak_winapp-1.0.1-py3-none-any.whl
-│   └── amatak_winapp-1.0.1.tar.gz
+│   └── __init__.py
 ├── installer
 │   └── win_installer.nsi
 ├── main.py
@@ -74,7 +66,24 @@ winapp/
 ├── pyproject.toml
 ├── requirements.txt
 ├── run_winapp.py
+├── sample-app
+│   ├── README.md
+│   ├── assets
+│   │   ├── brand
+│   │   └── icons
+│   ├── config.json
+│   ├── docs
+│   ├── gui
+│   ├── main.py
+│   ├── requirements.txt
+│   ├── src
+│   └── tests
 ├── setup.py
 └── winapp.bat
 ```
-
+## Documentation & Modules
+## Setup
+```bash
+pip install -r requirements.txt
+python main.py
+```

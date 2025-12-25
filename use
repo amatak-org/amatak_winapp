@@ -9,3 +9,20 @@ python run_gui.py
 
 # From existing winapp.py
 python -m bin.amatak.winapp gui
+
+
+
+
+
+# Remove the duplicate bin/amatak/winapp.py (or keep as backup)
+mv bin/amatak/winapp.py bin/amatak/winapp_backup.py
+
+# Clean build artifacts
+rm -rf build/ dist/ *.egg-info/
+
+# Reinstall the package
+pip uninstall amatak-winapp -y
+pip install -e .
+
+# Test
+winapp --help

@@ -142,31 +142,29 @@ class ProjectGenerator:
             print(f"   Script: {init_script}")
             
             try:
-                # Import the module directly
-                sys.path.insert(0, str(self.package_root))
+                # Read and execute the script directly
+                with open(init_script, 'r', encoding='utf-8') as f:
+                    script_code = f.read()
                 
-                # Import and run the init script
-                spec = importlib.util.spec_from_file_location("winapp_init", str(init_script))
-                init_module = importlib.util.module_from_spec(spec)
-                
-                # Set up the module's namespace
-                init_module.__dict__.update({
-                    '__name__': '__main__',
-                    '__file__': str(init_script),
+                # Create a namespace with required variables
+                namespace = {
                     'PROJECT_ROOT': str(project_path),
-                    'PACKAGE_ROOT': str(self.package_root)
-                })
+                    'PACKAGE_ROOT': str(self.package_root),
+                    '__name__': '__main__',  # Set this for script execution
+                    '__file__': str(init_script)
+                }
                 
-                # Execute the module
-                spec.loader.exec_module(init_module)
+                # Execute the script
+                exec(script_code, namespace)
                 
-                # Check if it has a main function
-                if hasattr(init_module, 'main'):
+                # Check if main was called or needs to be called
+                if 'main' in namespace and callable(namespace['main']):
                     print("Running winapp_init.main()...")
-                    return init_module.main()
+                    return namespace['main']()
                 else:
-                    print("Warning: winapp_init.py has no main() function")
-                    return False
+                    # If the script runs directly when imported (common pattern)
+                    print("Script executed successfully")
+                    return True
                     
             except Exception as e:
                 print(f"Error running winapp_init: {e}")

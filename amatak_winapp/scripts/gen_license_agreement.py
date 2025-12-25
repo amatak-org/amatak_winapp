@@ -17,7 +17,7 @@ def get_version():
 class LicensePDF(FPDF):
     def header(self):
         self.set_font("helvetica", "B", 16)
-        self.cell(0, 10, "SOFTWARE LICENSE AGREEMENT", center=True, ln=True)
+        self.cell(0, 10, "SOFTWARE LICENSE AGREEMENT", align="C", ln=True)
         self.ln(5)
 
     def footer(self):
