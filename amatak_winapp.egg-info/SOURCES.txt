@@ -36,3 +36,7 @@ amatak_winapp/scripts/gen_win.py
 amatak_winapp/scripts/winapp_init.py
 sample-app/__init__.py
 sample-app/main.py
+sample-app/docs/__init__.py
+sample-app/gui/__init__.py
+sample-app/src/__init__.py
+sample-app/tests/__init__.py

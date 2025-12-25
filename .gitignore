@@ -1,6 +1,7 @@
 .venv
 .pypirc
 use
+sync_version.py
 cleanup_editable.py
 gen_win_main.py
 gen_nsi_main.py
