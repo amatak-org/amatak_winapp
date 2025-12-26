@@ -22,18 +22,18 @@ def get_package_version():
     if version_file.exists():
         try:
             version = version_file.read_text(encoding='utf-8').strip()
-            print(f"📦 Found package version in data/VERSION.txt: {version}")
+            print(f"[INFO] Found package version in data/VERSION.txt: {version}")
             return version
         except Exception as e:
-            print(f"⚠️  Could not read version from {version_file}: {e}")
+            print(f"[WARNING] Could not read version from {version_file}: {e}")
     
     # Try to import from package
     try:
         from amatak_winapp import __version__
-        print(f"📦 Using __version__ from package: {__version__}")
+        print(f"[INFO] Using __version__ from package: {__version__}")
         return __version__
     except ImportError as e:
-        print(f"⚠️  Could not import __version__: {e}")
+        print(f"[WARNING] Could not import __version__: {e}")
     
     # Final fallback
     return "1.0.2"
@@ -45,10 +45,10 @@ def get_project_version():
     if project_version_file.exists():
         try:
             version = project_version_file.read_text(encoding='utf-8').strip()
-            print(f"📁 Using project version from VERSION.txt: {version}")
+            print(f"[INFO] Using project version from VERSION.txt: {version}")
             return version
         except Exception as e:
-            print(f"⚠️  Could not read project VERSION.txt: {e}")
+            print(f"[WARNING] Could not read project VERSION.txt: {e}")
     
     # Use package version as fallback
     return get_package_version()
@@ -58,7 +58,7 @@ def generate_inits():
     project_root = os.getcwd()
     current_version = get_project_version()
     
-    print(f"\n🔍 Starting initialization with version: {current_version}")
+    print(f"\n[SCANNER] Starting initialization with version: {current_version}")
     print("=" * 60)
     
     # Updated Header with Version
@@ -112,11 +112,11 @@ def generate_inits():
                 f.write(full_content)
             
             rel_folder = os.path.relpath(root, project_root)
-            print(f"✅ [{CURRENT_YEAR}] Initialized: {rel_folder}/__init__.py (v{current_version})")
+            print(f"[OK] [{CURRENT_YEAR}] Initialized: {rel_folder}/__init__.py (v{current_version})")
             init_count += 1
         except Exception as e:
             rel_folder = os.path.relpath(root, project_root)
-            print(f"❌ Failed to initialize {rel_folder}/__init__.py: {e}")
+            print(f"[ERROR] Failed to initialize {rel_folder}/__init__.py: {e}")
     
     # Special handling for the package root __init__.py
     if str(project_root).endswith("amatak_winapp"):
@@ -146,15 +146,15 @@ def generate_inits():
             with open(package_init_path, "w", encoding="utf-8") as f:
                 f.write(new_content)
             
-            print(f"\n📦 Updated package __init__.py with version: {current_version}")
+            print(f"\n[INFO] Updated package __init__.py with version: {current_version}")
         except Exception as e:
-            print(f"⚠️  Could not update package __init__.py: {e}")
+            print(f"[WARNING] Could not update package __init__.py: {e}")
     
     print("=" * 60)
-    print(f"✅ Initialization complete! Created/updated {init_count} __init__.py files")
-    print(f"📦 Package version: {current_version}")
+    print(f"[SUCCESS] Initialization complete! Created/updated {init_count} __init__.py files")
+    print(f"[INFO] Package version: {current_version}")
 
 if __name__ == "__main__":
-    print("🚀 Amatak Init Scanner - Generating/Updating __init__.py files")
+    print("AMATAK INIT SCANNER - Generating/Updating __init__.py files")
     print("=" * 60)
     generate_inits()

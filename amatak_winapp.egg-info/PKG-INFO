@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: amatak-winapp
-Version: 1.0.2
+Version: 1.0.4
 Summary: A Python toolkit for creating Windows application installers
 Home-page: https://github.com/amatak-org/amatak_winapp
 Author: Amatak Development Team
