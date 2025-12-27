@@ -4,10 +4,10 @@
 ; ============================================
 !include "MUI2.nsh"
 
-Name "Amatak WinApp Generator v1.0.2"
-OutFile "Amatak_WinApp_Generator_Setup_v1.0.2.exe"
+Name "Amatak WinApp Generator v1.0.4"
+OutFile "Amatak_WinApp_Generator_Setup_v1.0.4.exe"
 InstallDir "$PROGRAMFILES\Amatak Holdings Pty Ltd\Amatak WinApp Generator"
-InstallDirRegKey HKLM "Software\AmatakWinApp" "Install_Dir"
+InstallDirRegKey HKLM "Software\AmatakWinAppGenerator" "Install_Dir"
 RequestExecutionLevel admin
 ShowInstDetails show
 BrandingText "Amatak Holdings Pty Ltd © 2025"
@@ -35,6 +35,7 @@ Section "MainSection" SEC01
     SetOutPath "$INSTDIR"
     
     ; Create directories and install files
+    CreateDirectory "$INSTDIR\amatak_winapp.egg-info"
     CreateDirectory "$INSTDIR\amatak_winapp"
     CreateDirectory "$INSTDIR\amatak_winapp\assets\brand"
     CreateDirectory "$INSTDIR\amatak_winapp\data"
@@ -43,6 +44,10 @@ Section "MainSection" SEC01
     CreateDirectory "$INSTDIR\assets\brand"
     CreateDirectory "$INSTDIR\sample-app"
     CreateDirectory "$INSTDIR\sample-app\assets\brand"
+    CreateDirectory "$INSTDIR\sample-app\docs"
+    CreateDirectory "$INSTDIR\sample-app\gui"
+    CreateDirectory "$INSTDIR\sample-app\src"
+    CreateDirectory "$INSTDIR\sample-app\tests"
     SetOutPath "$INSTDIR"
     File "..\.pypirc"
     File "..\LICENSE"
@@ -51,6 +56,14 @@ Section "MainSection" SEC01
     File "..\VERSION.txt"
     File "..\amatak-winapp.bat"
     File "..\amatak-winapp.pyw"
+    SetOutPath "$INSTDIR\amatak_winapp.egg-info"
+    File "..\amatak_winapp.egg-info\PKG-INFO"
+    File "..\amatak_winapp.egg-info\SOURCES.txt"
+    File "..\amatak_winapp.egg-info\__init__.py"
+    File "..\amatak_winapp.egg-info\dependency_links.txt"
+    File "..\amatak_winapp.egg-info\entry_points.txt"
+    File "..\amatak_winapp.egg-info\requires.txt"
+    File "..\amatak_winapp.egg-info\top_level.txt"
     SetOutPath "$INSTDIR\amatak_winapp"
     File "..\amatak_winapp\__init__.py"
     SetOutPath "$INSTDIR\amatak_winapp\assets\brand"
@@ -81,6 +94,7 @@ Section "MainSection" SEC01
     File "..\assets\brand\license_agreement.pdf"
     SetOutPath "$INSTDIR"
     File "..\cleanup_editable.py"
+    File "..\file.py"
     File "..\gen_brand.py"
     File "..\gen_nsi_main.py"
     File "..\gen_tree.py"
@@ -99,8 +113,17 @@ Section "MainSection" SEC01
     File "..\sample-app\assets\brand\brand_installer.bmp"
     SetOutPath "$INSTDIR\sample-app"
     File "..\sample-app\config.json"
+    SetOutPath "$INSTDIR\sample-app\docs"
+    File "..\sample-app\docs\__init__.py"
+    SetOutPath "$INSTDIR\sample-app\gui"
+    File "..\sample-app\gui\__init__.py"
+    SetOutPath "$INSTDIR\sample-app"
     File "..\sample-app\main.py"
     File "..\sample-app\requirements.txt"
+    SetOutPath "$INSTDIR\sample-app\src"
+    File "..\sample-app\src\__init__.py"
+    SetOutPath "$INSTDIR\sample-app\tests"
+    File "..\sample-app\tests\__init__.py"
     SetOutPath "$INSTDIR"
     File "..\setup.py"
     File "..\sync_version.py"
@@ -111,11 +134,11 @@ Section "MainSection" SEC01
     SetOutPath "$INSTDIR"
     File "..\VERSION.txt"
     
-    ; Create batch launcher
+    ; Create batch launcher for builder
     FileOpen $0 "$INSTDIR\winapp.bat" w
     FileWrite $0 "@echo off$\r$\n"
     FileWrite $0 "echo ========================================$\r$\n"
-    FileWrite $0 "echo   Amatak WinApp Generator v1.0.2$\r$\n"
+    FileWrite $0 "echo   Amatak WinApp Generator v1.0.4$\r$\n"
     FileWrite $0 "echo ========================================$\r$\n"
     FileWrite $0 "echo.$\r$\n"
     FileWrite $0 'cd /d "%~dp0"$\r$\n'
@@ -158,6 +181,22 @@ Section "MainSection" SEC01
     FileWrite $0 ")$\r$\n"
     FileClose $0
     
+    ; Create GUI launcher for builder
+    FileOpen $0 "$INSTDIR\launch_gui.pyw" w
+    FileWrite $0 'import sys$\r$\n'
+    FileWrite $0 'import os$\r$\n'
+    FileWrite $0 'sys.path.insert(0, os.path.dirname(__file__))$\r$\n'
+    FileWrite $0 'try:$\r$\n'
+    FileWrite $0 '    from amatak_winapp.gui.winapp_gui import gui_main$\r$\n'
+    FileWrite $0 '    gui_main()$\r$\n'
+    FileWrite $0 'except Exception as e:$\r$\n'
+    FileWrite $0 '    import tkinter as tk$\r$\n'
+    FileWrite $0 '    from tkinter import messagebox$\r$\n'
+    FileWrite $0 '    tk.Tk().withdraw()$\r$\n'
+    FileWrite $0 '    messagebox.showerror("Error", f"Failed to start: {e}")$\r$\n'
+    FileWrite $0 '    sys.exit(1)$\r$\n'
+    FileClose $0
+
     ; Create VBS wrapper - SIMPLIFIED AND CORRECT
     FileOpen $0 "$INSTDIR\launch.vbs" w
     FileWrite $0 'Set WshShell = CreateObject("WScript.Shell")$\r$\n'
@@ -177,33 +216,17 @@ Section "MainSection" SEC01
     FileWrite $0 'if errorlevel 1 pause$\r$\n'
     FileClose $0
     
-    ; Create Python GUI launcher script
-    FileOpen $0 "$INSTDIR\launch_gui.pyw" w
-    FileWrite $0 'import sys$\r$\n'
-    FileWrite $0 'import os$\r$\n'
-    FileWrite $0 'sys.path.insert(0, os.path.dirname(__file__))$\r$\n'
-    FileWrite $0 'try:$\r$\n'
-    FileWrite $0 '    from amatak_winapp.gui.winapp_gui import gui_main$\r$\n'
-    FileWrite $0 '    gui_main()$\r$\n'
-    FileWrite $0 'except Exception as e:$\r$\n'
-    FileWrite $0 '    import tkinter as tk$\r$\n'
-    FileWrite $0 '    from tkinter import messagebox$\r$\n'
-    FileWrite $0 '    tk.Tk().withdraw()$\r$\n'
-    FileWrite $0 '    messagebox.showerror("Error", f"Failed to start: {e}")$\r$\n'
-    FileWrite $0 '    sys.exit(1)$\r$\n'
-    FileClose $0
-    
     ; Write installation info
-    WriteRegStr HKLM "Software\AmatakWinApp" "Install_Dir" "$INSTDIR"
-    WriteRegStr HKLM "Software\AmatakWinApp" "Version" "1.0.2"
+    WriteRegStr HKLM "Software\AmatakWinAppGenerator" "Install_Dir" "$INSTDIR"
+    WriteRegStr HKLM "Software\AmatakWinAppGenerator" "Version" "1.0.4"
     
     ; Write uninstall info
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AmatakWinApp" "DisplayName" "Amatak WinApp Generator"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AmatakWinApp" "UninstallString" '"$INSTDIR\uninstall.exe"'
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AmatakWinApp" "DisplayIcon" "$INSTDIR\assets\brand\brand.ico"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AmatakWinApp" "DisplayVersion" "1.0.2"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AmatakWinApp" "Publisher" "Amatak Holdings Pty Ltd"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AmatakWinApp" "URLInfoAbout" "https://github.com/amatak-org/amatak-winapp"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AmatakWinAppGenerator" "DisplayName" "Amatak WinApp Generator"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AmatakWinAppGenerator" "UninstallString" '"$INSTDIR\uninstall.exe"'
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AmatakWinAppGenerator" "DisplayIcon" "$INSTDIR\assets\brand\brand.ico"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AmatakWinAppGenerator" "DisplayVersion" "1.0.4"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AmatakWinAppGenerator" "Publisher" "Amatak Holdings Pty Ltd"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AmatakWinAppGenerator" "URLInfoAbout" "https://github.com/amatak-org/amatak-winapp"
     
 SectionEnd
 
@@ -213,9 +236,9 @@ Section "Shortcuts" SEC02
     ; Create shortcut to VBS launcher (hidden console)
     CreateShortcut "$SMPROGRAMS\$StartMenuFolder\Amatak WinApp Generator.lnk" "$INSTDIR\launch.vbs" "" "$INSTDIR\assets\brand\brand.ico" 0
     ; Create shortcut to visible console
-    CreateShortcut "$SMPROGRAMS\$StartMenuFolder\Amatak WinApp (Console).lnk" "$INSTDIR\run-visible.bat" "" "$INSTDIR\assets\brand\brand.ico" 0
+    CreateShortcut "$SMPROGRAMS\$StartMenuFolder\Amatak WinApp Generator (Console).lnk" "$INSTDIR\run-visible.bat" "" "$INSTDIR\assets\brand\brand.ico" 0
     ; Create shortcut to Python GUI launcher
-    CreateShortcut "$SMPROGRAMS\$StartMenuFolder\Amatak WinApp GUI.lnk" "$INSTDIR\launch_gui.pyw" "" "$INSTDIR\assets\brand\brand.ico" 0
+    CreateShortcut "$SMPROGRAMS\$StartMenuFolder\Amatak WinApp Generator GUI.lnk" "$INSTDIR\launch_gui.pyw" "" "$INSTDIR\assets\brand\brand.ico" 0
     CreateShortcut "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
     CreateShortcut "$DESKTOP\Amatak WinApp Generator.lnk" "$INSTDIR\launch.vbs" "" "$INSTDIR\assets\brand\brand.ico" 0
     !insertmacro MUI_STARTMENU_WRITE_END
@@ -233,8 +256,8 @@ Section "Uninstall"
     Delete "$DESKTOP\Amatak WinApp Generator.lnk"
     
     ; Remove registry entries
-    DeleteRegKey HKLM "Software\AmatakWinApp"
-    DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AmatakWinApp"
+    DeleteRegKey HKLM "Software\AmatakWinAppGenerator"
+    DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AmatakWinAppGenerator"
     
     ; Remove files
     Delete "$INSTDIR\winapp.bat"
@@ -248,5 +271,5 @@ Section "Uninstall"
 SectionEnd
 
 Function .onInit
-    StrCpy $StartMenuFolder "AmatakWinApp"
+    StrCpy $StartMenuFolder "AmatakWinAppGenerator"
 FunctionEnd

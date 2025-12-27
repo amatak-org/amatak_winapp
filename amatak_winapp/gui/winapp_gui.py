@@ -42,7 +42,7 @@ class WinAppGUI:
         
         # Set icon
         self.set_icon()
-        
+
         # Center window
         self.center_window()
         
@@ -152,6 +152,8 @@ class WinAppGUI:
         self.create_initialize_tab()
         self.create_build_tab()
         self.create_logs_tab()
+
+        
     
     def create_welcome_tab(self):
         """Create welcome/home tab"""
@@ -309,6 +311,8 @@ Select a tab above to get started!
             return self.run_init_scanner(project_path)
         elif script_name == "gen_readme.py":
             return self.run_gen_readme(project_path)
+        elif script_name == "gen_license.py":
+            return self.run_gen_license(project_path)
         else:
             self.log_message(f"⚠️ Unknown script: {script_name}", "WARNING")
             return False
@@ -389,6 +393,52 @@ Select a tab above to get started!
                 
         except Exception as e:
             self.log_message(f"❌ Exception while running gen_readme.py: {e}", "ERROR")
+            return False
+        
+
+    def run_gen_license(self, project_path):
+        """Generate MIT License file (simple version)"""
+        self.log_message("📜 Generating MIT License file...")
+        
+        # Get current year
+        currentyear = datetime.datetime.now().year
+        
+        # Use directory name as app name
+        currentapp = project_path.name
+        
+        # MIT License template
+        license_content = f"""MIT License
+
+    Copyright (c) {currentyear} {currentapp}
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE."""
+        
+        try:
+            # Write LICENSE file
+            license_file = project_path / "LICENSE"
+            license_file.write_text(license_content, encoding='utf-8')
+            
+            self.log_message(f"✅ MIT License file generated: {license_file}")
+            return True
+            
+        except Exception as e:
+            self.log_message(f"❌ Failed to generate LICENSE file: {e}", "ERROR")
             return False
 
     def run_winapp_init(self, project_path):
@@ -516,6 +566,10 @@ Select a tab above to get started!
                 text="📝 Generate README",
                 command=self.generate_readme_only,
                 width=20).pack(side=tk.LEFT, padx=5)
+        ttk.Button(quick_buttons_frame,
+                text="📝 Generate License",
+                command=self.generate_license_only,
+                width=20).pack(side=tk.LEFT, padx=5)
         
         ttk.Button(quick_buttons_frame,
                 text="📦 Generate NSI",
@@ -553,6 +607,7 @@ Select a tab above to get started!
             ("gen_readme.py", "Generate README documentation", "📝", True),
             ("gen_brand.py", "Generate branding assets", "🎨", True),
             ("gen_nsi.py", "Generate NSIS installer script", "📦", True),
+            ("gen_license.py", "Generate License script", "📦", True),
             ("gen_win.py", "Generate Windows build files", "🪟", True),
         ]
         
@@ -723,6 +778,73 @@ Select a tab above to get started!
             daemon=True
         )
         thread.start()
+
+
+    def generate_license_only(self):
+        """Generate only License"""
+        project_path = Path(self.init_path_var.get())
+        
+        # Validate project path
+        if not project_path.exists():
+            messagebox.showerror("Error", f"Project path does not exist:\n{project_path}")
+            return
+        
+        # Check if it's a valid project directory
+        if not (project_path / "main.py").exists() and not (project_path / "config.json").exists():
+            response = messagebox.askyesno(
+                "Warning", 
+                f"This doesn't look like a project directory.\n\n"
+                f"Path: {project_path}\n\n"
+                "Do you want to generate LICENSE anyway?"
+            )
+            if not response:
+                return
+        
+        # Check if LICENSE already exists
+        if (project_path / "LICENSE").exists():
+            response = messagebox.askyesno(
+                "Overwrite?", 
+                "LICENSE file already exists.\nDo you want to overwrite it?"
+            )
+            if not response:
+                return
+        
+        # Run in background thread
+        thread = threading.Thread(
+            target=self._generate_license_thread,
+            args=(project_path,),
+            daemon=True
+        )
+        thread.start()
+
+    def _generate_license_thread(self, project_path):
+        """Background thread for generating license"""
+        try:
+            # Generate license
+            success = self.run_gen_license(project_path)
+            
+            # Update UI in main thread
+            self.root.after(0, lambda: self._handle_license_result(success, project_path))
+        
+        except Exception as e:
+            self.root.after(0, lambda: messagebox.showerror(
+                "Error", 
+                f"Exception while generating LICENSE:\n{str(e)}"
+            ))
+
+    def _handle_license_result(self, success, project_path):
+        """Handle license generation result in main thread"""
+        if success:
+            messagebox.showinfo(
+                "Success", 
+                f"✅ LICENSE file generated successfully!\n\n"
+                f"📁 Location: {project_path / 'LICENSE'}"
+            )
+        else:
+            messagebox.showerror(
+                "Error", 
+                "❌ Failed to generate LICENSE file.\n\nCheck the console/logs for details."
+            )
 
     def _generate_readme_thread(self, project_path):
         """Thread function for generating README"""
@@ -1516,7 +1638,7 @@ Select a tab above to get started!
     
     def open_docs(self):
         """Open documentation"""
-        webbrowser.open("https://github.com/amatak-org/amatak-winapp")
+        webbrowser.open("https://github.com/amatak-org/amatak_winapp")
     
     def show_about(self):
         """Show about dialog"""
@@ -1534,7 +1656,7 @@ Features:
 
 Author: Amatak Development Team
 License: MIT
-GitHub: https://github.com/amatak-org/amatak-winapp
+GitHub: https://github.com/amatak-org/amatak_winapp
 """
         
         messagebox.showinfo("About Amatak WinApp", about_text)

@@ -63,7 +63,7 @@ Examples:
 
 Note: 'winapp build' runs both 'nsi' and 'win' scripts in sequence
 
-For more information: https://github.com/amatak-org/amatak-winapp
+For more information: https://github.com/amatak-org/amatak_winapp
 """
     print(help_text)
 
@@ -227,7 +227,7 @@ class ProjectGenerator:
         # Create basic structure
         directories = [
             "assets",
-            "assets/brand",
+            "assets/brand", 
             "assets/icons",
             "gui",
             "installer",
@@ -238,26 +238,67 @@ class ProjectGenerator:
         for directory in directories:
             (base_path / directory).mkdir(parents=True, exist_ok=True)
         
+        # Create VERSION.txt file
+        version_content = "1.0.0\n"
+        (base_path / "VERSION.txt").write_text(version_content, encoding='utf-8')
+        
         # Create basic files
         files = {
             "main.py": f"""#!/usr/bin/env python3
-# {base_path.name} - {category_data.get('name', 'General')} Application
+    # {base_path.name} - {category_data.get('name', 'General')} Application
 
-import sys
+    import sys
 
-def main():
-    print("Welcome to {base_path.name}!")
-    return 0
+    def main():
+        print("Welcome to {base_path.name}!")
+        return 0
 
-if __name__ == "__main__":
-    sys.exit(main())
-""",
-            "requirements.txt": "# Project dependencies\n",
-            "README.md": f"# {base_path.name}\n\nA {category_data.get('name', 'General')} application.\n"
+    if __name__ == "__main__":
+        sys.exit(main())
+    """,
+            "requirements.txt": """# Project dependencies
+    PyQt6
+    markdown
+    requests
+    numpy
+    aiohttp
+    watchdog
+    pillow
+    fpdf
+    scikit-learn
+    beautifulsoup4
+    pandas
+    black
+    flake8
+    pytest
+    pyinstaller
+    python-magic
+    winshell
+    pywin32
+    reportlab
+    psutil
+    """,
+            "README.md": f"# {base_path.name}\n\nA {category_data.get('name', 'General')} application.\n",
+            "config.json": f"""{{
+        "project_name": "{base_path.name}",
+        "app_name": "{base_path.name}",
+        "version": "1.0.0",
+        "category": "{category_data.get('name', 'General')}",
+        "created": "{datetime.datetime.now().isoformat()}",
+        "description": "A {category_data.get('name', 'General')} application"
+    }}"""
         }
         
         for filename, content in files.items():
             (base_path / filename).write_text(content, encoding='utf-8')
+        
+        # Create __init__.py files in packages
+        packages = ["src", "gui", "tests"]
+        for package in packages:
+            init_file = base_path / package / "__init__.py"
+            init_file.write_text("# Package marker\n", encoding='utf-8')
+        
+        return True
     
     def update_category_files(self, project_path, category_name):
         """Update files with category-specific content"""
@@ -371,7 +412,8 @@ if __name__ == "__main__":
             "gui/",
             "README.md",
             "assets/brand/",
-            "installer/"
+            "installer/",
+            "VERSION.txt",
         ]
         
         missing = []

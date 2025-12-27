@@ -6,3 +6,4 @@ cleanup_editable.py
 gen_win_main.py
 gen_nsi_main.py
 gen_brand.pygen_tree.py
+file.py
