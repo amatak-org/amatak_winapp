@@ -1589,27 +1589,140 @@ Select a tab above to get started!
     
     def _create_project_thread(self, project_name, category, location):
         """Thread function for creating project"""
-        self.log_message(f"Creating project '{project_name}'...")
+        self.log_message(f"🚀 Creating project '{project_name}'...")
         
         try:
             category_data = {"name": category}
             result = self.project_generator.create_structure(project_name, category_data, location)
             
-            self.log_message(f"Project created at: {result}", "SUCCESS")
+            self.log_message(f"✅ Project created successfully at: {result}", "SUCCESS")
             
-            # Ask if user wants to open the new project
-            if messagebox.askyesno("Success", 
-                                 f"Project '{project_name}' created successfully!\n\n" +
-                                 f"Open project?"):
-                self.current_project_path = Path(result)
+            # Show enhanced success dialog with instant GUI option
+            project_path = Path(result)
+            
+            response = messagebox.askyesnocancel(
+                "🎉 Project Created Successfully!",
+                f"✨ {project_name} is ready!\n\n"
+                f"📁 Location: {result}\n\n"
+                f"What would you like to do?\n\n"
+                f"• 'Yes' = 🚀 LAUNCH INSTANT GUI\n"
+                f"• 'No' = 📁 OPEN PROJECT FOLDER\n"
+                f"• 'Cancel' = RETURN TO MAIN MENU\n\n"
+                f"Your app includes an instant visual interface\n"
+                f"that showcases your new creation immediately!"
+            )
+            
+            if response is True:  # Yes - Launch Instant GUI
+                self.log_message(f"🚀 Launching Instant GUI for '{project_name}'...")
+                
+                # Close the current window
+                self.window.after(1000, self.window.withdraw)
+                
+                # Launch the new project's main.py
+                main_py_path = project_path / "main.py"
+                try:
+                    import subprocess
+                    import sys
+                    
+                    # Launch the new app in a new process
+                    if sys.platform == "win32":
+                        subprocess.Popen([sys.executable, str(main_py_path)], 
+                                    creationflags=subprocess.CREATE_NEW_CONSOLE)
+                    else:
+                        subprocess.Popen([sys.executable, str(main_py_path)])
+                    
+                    self.log_message(f"✅ Instant GUI launched successfully!", "SUCCESS")
+                    
+                    # Show success message
+                    self.window.after(1500, lambda: messagebox.showinfo(
+                        "Application Launched!",
+                        f"✨ {project_name} is now running!\n\n"
+                        f"Look for the new window with:\n"
+                        f"• Modern dark blue interface\n"
+                        f"• Action buttons to explore\n"
+                        f"• Customization options\n"
+                        f"• Links to BuildWin online tools\n\n"
+                        f"You can return to this launcher anytime."
+                    ))
+                    
+                except Exception as e:
+                    self.log_message(f"Failed to launch GUI: {e}", "ERROR")
+                    messagebox.showerror(
+                        "Launch Error",
+                        f"Could not launch {project_name}:\n{e}\n\n"
+                        f"You can manually run:\npython {main_py_path}"
+                    )
+                    self.window.after(500, self.window.deiconify)
+            
+            elif response is False:  # No - Open Project Folder
+                self.log_message(f"📁 Opening project folder for '{project_name}'...")
+                self.current_project_path = project_path
                 self.project_label.config(text=f"📁 {self.current_project_path}")
                 self.init_path_var.set(str(self.current_project_path))
                 self.build_path_var.set(str(self.current_project_path))
-                self.log_message(f"Switched to project: {project_name}")
                 
+                # Open folder in file explorer
+                try:
+                    import os
+                    import subprocess
+                    
+                    path_str = str(project_path)
+                    if os.name == 'nt':  # Windows
+                        os.startfile(path_str)
+                    elif sys.platform == 'darwin':  # macOS
+                        subprocess.run(['open', path_str])
+                    else:  # Linux
+                        subprocess.run(['xdg-open', path_str])
+                    
+                    self.log_message(f"✅ Project folder opened successfully!", "SUCCESS")
+                    
+                except Exception as e:
+                    self.log_message(f"Could not open folder: {e}", "WARNING")
+                    messagebox.showinfo(
+                        "Project Location",
+                        f"📁 Your project is at:\n\n{path_str}\n\n"
+                        f"You can navigate to this folder manually."
+                    )
+            
+            else:  # Cancel - Just update current project
+                self.current_project_path = project_path
+                self.project_label.config(text=f"📁 {self.current_project_path}")
+                self.init_path_var.set(str(self.current_project_path))
+                self.build_path_var.set(str(self.current_project_path))
+                self.log_message(f"📋 Project '{project_name}' set as current")
+            
+            # Log what was created
+            self.log_message("📦 Project structure created:", "INFO")
+            for item in project_path.glob("*"):
+                if item.is_dir():
+                    self.log_message(f"  📁 {item.name}/")
+                else:
+                    self.log_message(f"  📄 {item.name}")
+            
+            # Show BuildWin promotion
+            self.window.after(2000, lambda: messagebox.showinfo(
+                "✨ Next Steps",
+                f"Remember: For advanced drag-and-drop customization,\n"
+                f"visit our online platform:\n\n"
+                f"👉 https://buildwin.uniqueedge.net 👈\n\n"
+                f"Features available:\n"
+                f"• Visual interface builder\n"
+                f"• Component library\n"
+                f"• Real-time preview\n"
+                f"• Export options"
+            ))
+            
         except Exception as e:
-            self.log_message(f"Failed to create project: {e}", "ERROR")
-            messagebox.showerror("Error", f"Failed to create project:\n{e}")
+            self.log_message(f"❌ Failed to create project: {e}", "ERROR")
+            messagebox.showerror(
+                "❌ Project Creation Failed",
+                f"Could not create project '{project_name}':\n\n"
+                f"Error: {e}\n\n"
+                f"Please check:\n"
+                f"• Write permissions in {location}\n"
+                f"• Valid project name\n"
+                f"• Available disk space"
+            )
     
     def quick_initialize(self):
         """Quick initialize current project"""

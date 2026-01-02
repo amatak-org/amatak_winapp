@@ -224,81 +224,442 @@ class ProjectGenerator:
     
     def create_default_structure(self, base_path, category_data):
         """Create default project structure"""
-        # Create basic structure
-        directories = [
-            "assets",
-            "assets/brand", 
-            "assets/icons",
-            "gui",
-            "installer",
-            "src",
-            "tests"
-        ]
+        import json
+        import datetime
+        import os
         
-        for directory in directories:
+        category_name = category_data.get('name', 'General')
+        project_name = base_path.name  # Get project name from base_path
+        current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        # Create directories
+        for directory in ["assets", "assets/brand", "assets/icons", "gui", "installer", "src", "tests", "docs", "data", "logs"]:
             (base_path / directory).mkdir(parents=True, exist_ok=True)
         
-        # Create VERSION.txt file
-        version_content = "1.0.0\n"
-        (base_path / "VERSION.txt").write_text(version_content, encoding='utf-8')
+        # Create main.py with GUI - Write it line by line
+        main_py_lines = [
+            '#!/usr/bin/env python3',
+            '"""',
+            f'{project_name} - {category_name} Application',
+            '"""',
+            '',
+            'import sys',
+            'import os',
+            'from pathlib import Path',
+            '',
+            '# Try to import GUI modules',
+            'GUI_AVAILABLE = False',
+            'try:',
+            '    import tkinter as tk',
+            '    from tkinter import ttk, messagebox',
+            '    GUI_AVAILABLE = True',
+            'except ImportError:',
+            '    print("GUI not available. Running in console mode.")',
+            '',
+            'class TabbedGUI:',
+            '    """Main GUI application with tabs"""',
+            '    ',
+            '    def __init__(self):',
+            f'        self.project_name = "{project_name}"',
+            f'        self.category = "{category_name}"',
+            '        self.project_path = Path(__file__).parent',
+            f'        self.created_time = "{current_time}"',
+            '        ',
+            '        if not GUI_AVAILABLE:',
+            '            self.run_console_mode()',
+            '            return',
+            '            ',
+            '        # Create main window',
+            '        self.root = tk.Tk()',
+            '        self.root.title(f"{self.project_name} - WinApp Factory")',
+            '        self.root.geometry("900x700")',
+            '        self.root.configure(bg="#1a1a2e")',
+            '        ',
+            '        # Setup UI',
+            '        self.setup_ui()',
+            '        ',
+            '    def setup_ui(self):',
+            '        """Setup user interface"""',
+            '        # Header',
+            '        header_frame = tk.Frame(self.root, bg="#1a1a2e", height=100)',
+            '        header_frame.pack(fill="x", pady=(20, 10))',
+            '        ',
+            '        tk.Label(header_frame, text="🚀", font=("Arial", 36),',
+            '                 bg="#1a1a2e", fg="#00ffcc").pack()',
+            '        tk.Label(header_frame, text=self.project_name,',
+            '                 font=("Segoe UI", 24, "bold"),',
+            '                 bg="#1a1a2e", fg="#ffffff").pack()',
+            '        tk.Label(header_frame, text=f"{self.category} Application",',
+            '                 font=("Segoe UI", 12),',
+            '                 bg="#1a1a2e", fg="#ccccff").pack(pady=5)',
+            '        ',
+            '        # Notebook for tabs',
+            '        self.notebook = ttk.Notebook(self.root)',
+            '        self.notebook.pack(fill="both", expand=True, padx=20, pady=10)',
+            '        ',
+            '        # Create tabs',
+            '        self.create_welcome_tab()',
+            '        self.create_project_tab()',
+            '        self.create_build_tab()',
+            '        self.create_quickstart_tab()',
+            '        self.create_docs_tab()',
+            '        self.create_settings_tab()',
+            '        ',
+            '        # Button frame',
+            '        button_frame = tk.Frame(self.root, bg="#1a1a2e")',
+            '        button_frame.pack(fill="x", pady=20)',
+            '        ',
+            '        tk.Button(button_frame, text="📁 Open Project",',
+            '                  command=self.open_project, width=15).pack(side="left", padx=10)',
+            '        tk.Button(button_frame, text="🚀 Run App",',
+            '                  command=self.run_app, width=15).pack(side="left", padx=10)',
+            '        tk.Button(button_frame, text="🔧 Build",',
+            '                  command=self.build_app, width=15).pack(side="left", padx=10)',
+            '        tk.Button(button_frame, text="🧪 Test",',
+            '                  command=self.test_app, width=15).pack(side="left", padx=10)',
+            '        tk.Button(button_frame, text="❌ Exit",',
+            '                  command=self.root.quit, width=15).pack(side="left", padx=10)',
+            '        ',
+            '        # Footer',
+            '        footer_frame = tk.Frame(self.root, bg="#16213e", height=40)',
+            '        footer_frame.pack(fill="x", side="bottom")',
+            '        ',
+            '        tk.Label(footer_frame,',
+            '                 text=f"✅ {self.project_name} Created • {self.created_time}",',
+            '                 bg="#16213e", fg="#00ffcc", font=("Segoe UI", 9)).pack(pady=10)',
+            '        ',
+            '    def create_welcome_tab(self):',
+            '        """Create welcome tab"""',
+            '        tab = tk.Frame(self.notebook, bg="#0f3460")',
+            '        self.notebook.add(tab, text="🎯 Welcome")',
+            '        ',
+            '        welcome_text = f"""✨ Congratulations!',
+            '',
+            f'Your project "{{self.project_name}}" is ready!',
+            '',
+            f'📍 Location: {{self.project_path}}',
+            f'📅 Created: {{self.created_time}}',
+            f'📦 Category: {{self.category}}',
+            f'🚀 Status: Ready to develop',
+            '',
+            f'🎯 Next Steps:',
+            f'1. Explore your project structure',
+            f'2. Add your code to src/ folder',
+            f'3. Install dependencies',
+            f'4. Run tests',
+            f'5. Build your application',
+            '',
+            f'💡 Use the tabs above to navigate."""',
+            '        ',
+            '        text_widget = tk.Text(tab, height=20, wrap="word",',
+            '                             bg="#0f3460", fg="#ffffff",',
+            '                             font=("Consolas", 10), borderwidth=0)',
+            '        text_widget.insert("1.0", welcome_text)',
+            '        text_widget.config(state="disabled")',
+            '        text_widget.pack(padx=20, pady=20, fill="both", expand=True)',
+            '        ',
+            '    def create_project_tab(self):',
+            '        """Create project structure tab"""',
+            '        tab = tk.Frame(self.notebook, bg="#0f3460")',
+            '        self.notebook.add(tab, text="📁 Project")',
+            '        ',
+            '        structure_text = f"""{{self.project_name}}/',
+            f'├── 📦 src/              - Source code',
+            f'├── 🎨 gui/              - GUI components',
+            f'├── 🗃️  data/             - Data storage',
+            f'├── 🔧 installer/        - Build scripts',
+            f'├── 🧪 tests/            - Test cases',
+            f'├── 📚 docs/             - Documentation',
+            f'├── 🎯 assets/           - Images & icons',
+            f'└── 📊 logs/             - Application logs',
+            '',
+            f'📋 Files created:',
+            f'• main.py            - This application',
+            f'• requirements.txt   - Dependencies',
+            f'• README.md          - Documentation',
+            f'• installer/build.py - Build script"""',
+            '        ',
+            '        text_widget = tk.Text(tab, height=20, wrap="word",',
+            '                             bg="#0f3460", fg="#ffffff",',
+            '                             font=("Consolas", 10), borderwidth=0)',
+            '        text_widget.insert("1.0", structure_text)',
+            '        text_widget.config(state="disabled")',
+            '        text_widget.pack(padx=20, pady=20, fill="both", expand=True)',
+            '        ',
+            '    def create_build_tab(self):',
+            '        """Create build tab"""',
+            '        tab = tk.Frame(self.notebook, bg="#0f3460")',
+            '        self.notebook.add(tab, text="🔧 Build")',
+            '        ',
+            '        build_text = """🚀 BUILD COMMANDS:',
+            '',
+            f'1. Install dependencies:',
+            f'   pip install -r requirements.txt',
+            '',
+            f'2. Run tests:',
+            f'   python -m pytest tests/',
+            '',
+            f'3. Build executable:',
+            f'   python installer/build.py',
+            '',
+            f'4. Create distributable:',
+            f'   pyinstaller --onefile --name {{self.project_name}} main.py',
+            '',
+            f'📦 Build outputs will be in "dist/" folder"""',
+            '        ',
+            '        text_widget = tk.Text(tab, height=20, wrap="word",',
+            '                             bg="#0f3460", fg="#ffffff",',
+            '                             font=("Consolas", 10), borderwidth=0)',
+            '        text_widget.insert("1.0", build_text)',
+            '        text_widget.config(state="disabled")',
+            '        text_widget.pack(padx=20, pady=20, fill="both", expand=True)',
+            '        ',
+            '    def create_quickstart_tab(self):',
+            '        """Create quick start tab"""',
+            '        tab = tk.Frame(self.notebook, bg="#0f3460")',
+            '        self.notebook.add(tab, text="⚡ Quick Start")',
+            '        ',
+            '        quickstart_text = """🎯 IMMEDIATE ACTIONS:',
+            '',
+            f'1️⃣  RUN THE APP:',
+            f'   python main.py',
+            '',
+            f'2️⃣  EXPLORE FILES:',
+            f'   Open project folder',
+            '',
+            f'3️⃣  START CODING:',
+            f'   • Edit main.py for app logic',
+            f'   • Add modules to src/ folder',
+            f'   • Create GUI in gui/ folder',
+            '',
+            f'4️⃣  TEST & BUILD:',
+            f'   • Run tests: python -m pytest',
+            f'   • Build: python installer/build.py"""',
+            '        ',
+            '        text_widget = tk.Text(tab, height=20, wrap="word",',
+            '                             bg="#0f3460", fg="#ffffff",',
+            '                             font=("Consolas", 10), borderwidth=0)',
+            '        text_widget.insert("1.0", quickstart_text)',
+            '        text_widget.config(state="disabled")',
+            '        text_widget.pack(padx=20, pady=20, fill="both", expand=True)',
+            '        ',
+            '    def create_docs_tab(self):',
+            '        """Create documentation tab"""',
+            '        tab = tk.Frame(self.notebook, bg="#0f3460")',
+            '        self.notebook.add(tab, text="📚 Docs")',
+            '        ',
+            '        docs_text = """📖 AVAILABLE DOCUMENTATION:',
+            '',
+            f'1. README.md',
+            f'   Main project documentation',
+            f'   Location: project_root/README.md',
+            '',
+            f'2. Project Guide',
+            f'   Detailed getting started guide',
+            f'   Location: docs/guide.md',
+            '',
+            f'3. Build Documentation',
+            f'   Build and deployment instructions',
+            f'   Location: installer/build.py',
+            '',
+            f'4. Requirements',
+            f'   Dependency information',
+            f'   Location: requirements.txt',
+            '',
+            f'💡 Check docs/ folder for more resources."""',
+            '        ',
+            '        text_widget = tk.Text(tab, height=20, wrap="word",',
+            '                             bg="#0f3460", fg="#ffffff",',
+            '                             font=("Consolas", 10), borderwidth=0)',
+            '        text_widget.insert("1.0", docs_text)',
+            '        text_widget.config(state="disabled")',
+            '        text_widget.pack(padx=20, pady=20, fill="both", expand=True)',
+            '        ',
+            '    def create_settings_tab(self):',
+            '        """Create settings tab"""',
+            '        tab = tk.Frame(self.notebook, bg="#0f3460")',
+            '        self.notebook.add(tab, text="⚙️ Settings")',
+            '        ',
+            '        settings_text = """⚙️  PROJECT SETTINGS:',
+            '',
+            f'Project Name: {{self.project_name}}',
+            f'Category: {{self.category}}',
+            f'Created: {{self.created_time}}',
+            f'Location: {{self.project_path}}',
+            '',
+            f'🔧 Configuration:',
+            f'• Auto-build: Enabled',
+            f'• Testing: Enabled',
+            f'• Logging: Enabled',
+            '',
+            f'🛠️  To customize:',
+            f'• Edit main.py file',
+            f'• Modify requirements.txt',
+            f'• Update config files"""',
+            '        ',
+            '        text_widget = tk.Text(tab, height=20, wrap="word",',
+            '                             bg="#0f3460", fg="#ffffff",',
+            '                             font=("Consolas", 10), borderwidth=0)',
+            '        text_widget.insert("1.0", settings_text)',
+            '        text_widget.config(state="disabled")',
+            '        text_widget.pack(padx=20, pady=20, fill="both", expand=True)',
+            '        ',
+            '    def open_project(self):',
+            '        """Open project folder"""',
+            '        try:',
+            '            os.startfile(str(self.project_path))',
+            '        except:',
+            '            messagebox.showinfo("Location", f"Project: {self.project_path}")',
+            '        ',
+            '    def run_app(self):',
+            '        """Show run command"""',
+            '        messagebox.showinfo("Run", f"Command: python {self.project_path}/main.py")',
+            '        ',
+            '    def build_app(self):',
+            '        """Show build command"""',
+            '        messagebox.showinfo("Build", f"Command: python {self.project_path}/installer/build.py")',
+            '        ',
+            '    def test_app(self):',
+            '        """Show test command"""',
+            '        messagebox.showinfo("Test", f"Command: python -m pytest {self.project_path}/tests/")',
+            '        ',
+            '    def run_console_mode(self):',
+            '        """Run in console mode if GUI not available"""',
+            '        print(f"\\n🚀 Welcome to {self.project_name}!")',
+            '        print(f"📦 Category: {self.category}")',
+            '        print(f"📅 Created: {self.created_time}")',
+            '        print(f"📍 Location: {self.project_path}")',
+            '        print("\\n💡 Install tkinter for GUI interface")',
+            '        print("\\n🎯 Quick Start:")',
+            '        print("1. python main.py")',
+            '        print("2. pip install -r requirements.txt")',
+            '        print("3. python -m pytest tests/")',
+            f'        print(f"4. python installer/build.py")',
+            '        ',
+            '    def run(self):',
+            '        """Run the application"""',
+            '        if GUI_AVAILABLE:',
+            '            self.root.mainloop()',
+            '        ',
+            'def main():',
+            '    """Main entry point"""',
+            '    try:',
+            '        app = TabbedGUI()',
+            '        app.run()',
+            '        return 0',
+            '    except Exception as e:',
+            '        print(f"Error: {e}")',
+            '        return 1',
+            '',
+            'if __name__ == "__main__":',
+            '    sys.exit(main())',
+            ''
+        ]
         
-        # Create basic files
+        # Write main.py
+        with open(base_path / "main.py", "w", encoding="utf-8") as f:
+            f.write("\n".join(main_py_lines))
+        
+        # Create other files
         files = {
-            "main.py": f"""#!/usr/bin/env python3
-    # {base_path.name} - {category_data.get('name', 'General')} Application
+            "requirements.txt": f"""# {project_name} - Dependencies
+    # Install with: pip install -r requirements.txt
 
-    import sys
+    # Core packages
+    python>=3.8
 
-    def main():
-        print("Welcome to {base_path.name}!")
-        return 0
+    # GUI Framework
+    tkinter
 
-    if __name__ == "__main__":
-        sys.exit(main())
+    # Development tools
+    pytest>=7.4.0
+
+    # Build tools
+    pyinstaller>=6.0.0
+
+    # Add your dependencies below:
     """,
-            "requirements.txt": """# Project dependencies
-    PyQt6
-    markdown
-    requests
-    numpy
-    aiohttp
-    watchdog
-    pillow
-    fpdf
-    scikit-learn
-    beautifulsoup4
-    pandas
-    black
-    flake8
-    pytest
-    pyinstaller
-    python-magic
-    winshell
-    pywin32
-    reportlab
-    psutil
+            "README.md": f"""# {project_name}
+
+    ## Quick Start
+    1. Run: python main.py
+    2. Install: pip install -r requirements.txt
+    3. Test: python -m pytest tests/
+
+    ## Project Structure
+    {project_name}/
+    ├── main.py
+    ├── requirements.txt
+    ├── README.md
+    ├── src/
+    ├── gui/
+    ├── assets/
+    ├── tests/
+    ├── installer/
+    ├── docs/
+    ├── data/
+    └── logs/
+
+    ## Development
+    - Add code to src/
+    - Add GUI to gui/
+    - Add tests to tests/
+    - Build with installer/build.py
+
+    Created: {current_time}
     """,
-            "README.md": f"# {base_path.name}\n\nA {category_data.get('name', 'General')} application.\n",
-            "config.json": f"""{{
-        "project_name": "{base_path.name}",
-        "app_name": "{base_path.name}",
-        "version": "1.0.0",
-        "category": "{category_data.get('name', 'General')}",
-        "created": "{datetime.datetime.now().isoformat()}",
-        "description": "A {category_data.get('name', 'General')} application"
-    }}"""
+            "src/__init__.py": "# Source code package\n",
+            "gui/__init__.py": "# GUI components package\n",
+            "tests/__init__.py": "# Test package\n",
+            "docs/guide.md": f"""# {project_name} Guide
+
+    ## Getting Started
+    1. Run python main.py
+    2. Check requirements.txt
+    3. Start coding in src/
+
+    ## File Structure
+    - main.py: Application entry point
+    - src/: Your source code
+    - gui/: User interface
+    - tests/: Test cases
+    - installer/: Build scripts
+
+    Created: {current_time}
+    """,
+            "installer/build.py": f"""#!/usr/bin/env python3
+    \"\"\"
+    Build script for {project_name}
+    \"\"\"
+
+    print(\"Building {project_name}...\")
+    print(\"To create executable:\")
+    print(\"1. Install PyInstaller: pip install pyinstaller\")
+    print(\"2. Build: pyinstaller --onefile --name {project_name} main.py\")
+    print(\"3. Find executable in dist/ folder\")
+    """,
+            "data/.gitkeep": "",
+            "logs/.gitkeep": "",
+            "assets/brand/readme.txt": f"Add branding assets for {project_name} here\n",
+            "assets/icons/readme.txt": f"Add icon files for {project_name} here\n"
         }
         
+        # Write all files
         for filename, content in files.items():
-            (base_path / filename).write_text(content, encoding='utf-8')
+            file_path = base_path / filename
+            file_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(content)
         
-        # Create __init__.py files in packages
-        packages = ["src", "gui", "tests"]
-        for package in packages:
-            init_file = base_path / package / "__init__.py"
-            init_file.write_text("# Package marker\n", encoding='utf-8')
+        # Make build script executable
+        import stat
+        build_script = base_path / "installer" / "build.py"
+        if build_script.exists():
+            build_script.chmod(build_script.stat().st_mode | stat.S_IEXEC)
         
-        return True
+        # Create success file
+        with open(base_path / ".created", "w", encoding="utf-8") as f:
+            f.write(f"{project_name} created at {current_time}\n")
     
     def update_category_files(self, project_path, category_name):
         """Update files with category-specific content"""
